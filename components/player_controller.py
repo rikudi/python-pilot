@@ -1,16 +1,7 @@
-#####################################################
-### Pelaajan ohjaus ja toimintojen suorittaminen. ###
-#####################################################
+from pynput import keyboard
+from geopy.distance import geodesic
+from geopy.point import Point
 
-# Funktio joka ohjaa pelaajan liikkumista
-def liiku_suuntaan(suunta):
-    print(f"Liikuttiin suuntaan {suunta}")
-
-
-#Tähän valikko funktio ja ohjeet funktio..
-
-
-# Pelaajan näppäimet dictionaryssa
 nappaimet = {
     "1": "Lounas",
     "2": "Etelä",
@@ -20,18 +11,43 @@ nappaimet = {
     "7": "Luode",
     "8": "Pohjoinen",
     "9": "Koillinen",
-    " ": avaa_valikko,
-    "H": nayta_ohjeet
+    " ": 'avaa_valikko',
+    "H": 'nayta_ohjeet'
 }
 
-while True:
-    syote = input("Valitse suunta [1-9], Avaa valikko [SPACE], Ohjeet [H]:") # tekstin voi fiksaa paremmaks myöhemmin
-    toiminto = nappaimet.get(syote)   # Hae syötettä vastaava toiminto nappaimet dicti
-    if toiminto:                      # Tarkistetaan että syöte vastaa jotain toimintoa
-        if callable(toiminto):        # Tarkistetaan onko toiminto funktio callable-metodin avulla.
-            toiminto()                # Jos on, kutsutaan funktiota.
-        else: 
-            liiku_suuntaan(toiminto)  # Jos ei, kutsutaan liiku_suuntaan-funktiota.
-    else:
-        print("Virheellinen syöte!")
-        
+# funktio joka käsittelee valikon avaamista ja sulkua
+def avaa_valikko():
+    print("valikko avattu")
+
+# funktio joka käsittelee ohjeiden näyttämistä
+def nayta_ohjeet():
+    print("ohjevalikko avattu")
+
+
+# testi funktio joka liikuttaa pelaajaa etelään lähtöpisteestä päätepisteeseen tietyn matkan verran (200km)
+def liiku_suuntaan(bearing):
+    print("liikutaan suuntaan: " + bearing)
+    '''distance = 200
+    lat = "30"
+    lon = "45"
+    start_location = Point(lat, lon)
+    destination = geodesic(kilometers=distance).destination(start_point, bearing)'''
+
+
+def on_press(key):
+    if key == keyboard.Key.esc:
+        print("Esc painettu")
+        return False  # stop listener
+    try:
+        k = key.char.upper()  # single-char keys
+    except:
+        k = key.name  # other keys
+    if k in nappaimet:  # mapataan nappaimet dictionarysta
+        # self.keys.append(k)  # store it in global-like variable
+        value = nappaimet[k]
+        print('Painettu: ' + value)
+        liiku_suuntaan(value)
+
+listener = keyboard.Listener(on_press=on_press)
+listener.start()  # start to listen on a separate thread
+listener.join()
