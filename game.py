@@ -1,11 +1,17 @@
+from Komponentit.Kontrolleri import pelaaja_kontrolleri
+
 # Peli ydin-looppi.
 def game_loop():
+    print("peli aloitettu")
     running = True
     game_over = False
 
+    kontrolleri = pelaaja_kontrolleri.PelaajaKontrolleri()  # Luodaan instanssi PelaajaKontrolleri classista.
+
     while running:
-        
+
       # pelin logiikkaa tänne
+      # vaatii varmaan jonkunlaisen kierrosfunktion
 
         if game_over:
             running = False
@@ -43,9 +49,3 @@ while True:
         game_loop()
     else:
         continue
-
-
-
-
-# Kutsutaan peli looppi.
-#game_loop()
