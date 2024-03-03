@@ -28,14 +28,15 @@ def palaute():
     else:
         print("Matkasi pituus oli", kilometrit, "km! Suorituksesi oli huono!")
 
-    uusi_peli = input("Haluatko pelata uudestaan (kyllä/ei): ").lower()
-    if uusi_peli == "kyllä":
-        ohjeistus()
-        #Ohjeistukseen lisätään vielä pelaaja syöttämään pelitunnus
-        #Tietokanta resetointi mysql_insert_into(nimi)
-    elif uusi_peli == "ei":
-        quit()
-    else:
-        print("Tarkista syöte.")
+    while True:
+        uusi_peli = input("Haluatko pelata uudestaan (kyllä/ei): ").lower()
+        if uusi_peli == "kyllä":
+            ohjeistus()
+            # Ohjeistukseen lisätään vielä pelaaja syöttämään pelitunnus
+            # Tietokanta resetointi mysql_insert_into(nimi)
+        elif uusi_peli == "ei":
+            quit()
+        else:
+            print("Tarkista syöte.")
 
 palaute()
