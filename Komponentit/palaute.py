@@ -38,5 +38,3 @@ def palaute():
             quit()
         else:
             print("Tarkista syöte.")
-
-palaute()
