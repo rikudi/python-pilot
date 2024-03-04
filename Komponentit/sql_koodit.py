@@ -23,3 +23,10 @@ def mysql_insert_into(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+
+# Funktio koordinaattien päivittämiseen tietokantaan #
+
+# Funktio lähimpien lentokenttien löytämiseen tietokannasta #
+
+# Funktio kierrosten lisäämiseen tietokantaan #
+
