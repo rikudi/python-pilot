@@ -81,6 +81,7 @@ print("Koordinaatit ja bensa:")
 for x in mysql_query_tiedot(nimi):
     print(x)
 
+# koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
 Ankara = (40.128101348899996, 32.995098114)
 
 from geopy.distance import geodesic
