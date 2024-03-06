@@ -9,11 +9,18 @@ yhteys = mysql.connector.connect(
     autocommit=True
 )
 
-nimi = "Testi"
+# nimi = input("Anna pelinimi: ") #
+# def mysql_insert_alkuarvot(nimi): #
+  #  sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)" #
+   # kursori = yhteys.cursor() #
+    #kursori.execute(sql) #
+    # return #
+ #mysql_insert_alkuarvot(nimi) #
+
+nimi = "Testi1"
 latitude = float(input("Enter latitude: "))
 longitude = float(input("Enter longitude: "))
 koordinaatit = latitude, longitude
-
 def mysql_update_coordinates(nimi, latitude, longitude):
     sql = f"UPDATE game set location_lat = '{latitude}', location_lon = '{longitude}' WHERE id = '{nimi}'"
     kursori = yhteys.cursor()
@@ -21,6 +28,12 @@ def mysql_update_coordinates(nimi, latitude, longitude):
     return
 
 mysql_update_coordinates(nimi, latitude, longitude)
+def mysql_update_polttoaine(nimi):
+    sql = f"UPDATE game SET fuel = fuel - 20 WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    return
+mysql_update_polttoaine(nimi)
 
 def mysql_query_tiedot(nimi):
     sql = f"SELECT location_lat, location_lon, fuel FROM game WHERE id = '{nimi}'"
@@ -46,3 +59,34 @@ Ankara = (40.128101348899996, 32.995098114)
 from geopy.distance import geodesic
 matka = geodesic(koordinaatit, Ankara).km
 print(matka, "Kilometriä ankaraan")
+def mysql_query_close_airports():
+    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 ORDER BY name"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    mytiedot = kursori.fetchall()
+    return mytiedot
+for x in mysql_query_close_airports():
+    print(x)
+
+ICAO = input("Anna ICAO koodi: ")
+def mysql_update_laskeutuminen(nimi, ICAO):
+    sql = f"UPDATE game CROSS JOIN airport set location_lat = latitude_deg, location_lon = longitude_deg, fuel=100 where ident = '{ICAO}' and game.id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    return
+mysql_update_laskeutuminen(nimi, ICAO)
+
+def mysql_lentokenttä(ICAO):
+        sql = f"SELECT name FROM airport WHERE ident = '{ICAO}'"
+        kursori = yhteys.cursor()
+        kursori.execute(sql)
+        myresult = kursori.fetchall()
+        return myresult
+
+print("Laskeuduit lentokentälle: ", mysql_lentokenttä(ICAO), "ja tankkasit lentokoneen täyteen")
+def mysql_update_kierrokset(nimi):
+    sql = f"UPDATE game SET kierrokset = kierrokset + 1 WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    return
+mysql_update_kierrokset(nimi)
