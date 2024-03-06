@@ -1,4 +1,5 @@
 from geopy.distance import geodesic
+import Komponentit.sql_koodit
 import time, os
 
 ### Helsinki Vantaa koordinaatit ###
