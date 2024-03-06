@@ -16,6 +16,7 @@ def mysql_update_polttoaine(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+mysql_update_polttoaine(nimi)
 
 # funktio pelaajan nimen lisäämiseen tietokantaan ja pelaajalle syötetään alkuarvot tietokantaan"
 def mysql_insert_alkuarvot(nimi):
@@ -23,6 +24,7 @@ def mysql_insert_alkuarvot(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+mysql_insert_alkuarvot(nimi)
 
 # Funktio koordinaattien päivittämiseen tietokantaan #
 def mysql_update_coordinates(nimi, latitude, longitude):
@@ -30,13 +32,17 @@ def mysql_update_coordinates(nimi, latitude, longitude):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+mysql_update_coordinates(nimi, latitude, longitude)
 
 # Funktio lähimpien lentokenttien löytämiseen tietokannasta #
 def mysql_query_close_airports():
-    sql = f"SELECT name, ident FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 ORDER BY name"
+    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 ORDER BY name"
     kursori = yhteys.cursor()
     kursori.execute(sql)
-    return
+    mytiedot = kursori.fetchall()
+    return mytiedot
+for x in mysql_query_close_airports():
+    print(x)
 
 # Funktio kierrosten lisäämiseen tietokantaan #
 def mysql_update_kierrokset(nimi):
@@ -44,6 +50,7 @@ def mysql_update_kierrokset(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+mysql_update_kierrokset(nimi)
 
 # Funktio lentokentälle laskeutumiseen ja bensan täyttämiseen#
 def mysql_update_laskeutuminen(nimi, ICAO):
@@ -51,7 +58,32 @@ def mysql_update_laskeutuminen(nimi, ICAO):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
+mysql_update_laskeutuminen(nimi, ICAO)
 
 # Funktio pelaajan tietojen printtaamiseen. Latitude, longitude, maa, polttoaine, etäisyys Ankaraan, #
 # mahollinen lentokenttä, mahollinen tapahtuma #
+def mysql_query_tiedot(nimi):
+    sql = f"SELECT location_lat, location_lon, fuel FROM game WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    mytiedot = kursori.fetchall()
+    return mytiedot
 
+from geopy.geocoders import Nominatim
+geolocator = Nominatim(user_agent="testi")
+location = geolocator.reverse(koordinaatit, language="fi")
+if location == None:
+    print("Olet kansainvälisessä ilmatilassa")
+else:
+    print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
+
+print("Koordinaatit ja bensa:")
+for x in mysql_query_tiedot(nimi):
+    print(x)
+
+# koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
+Ankara = (40.128101348899996, 32.995098114)
+
+from geopy.distance import geodesic
+matka = geodesic(koordinaatit, Ankara).km
+print(matka, "Kilometriä ankaraan")
