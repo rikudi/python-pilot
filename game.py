@@ -1,15 +1,12 @@
 from geopy.distance import geodesic
 from Komponentit import sql_koodit
 from Komponentit.Valikot import valikko
-import time, os
+import time
 
-'''### Helsinki Vantaa koordinaatit ###
-start_lat = 60.3172
-start_lon = 24.963301
-####################################'''
 kierros_count = 1
 pelaaja_id = None
 lahimmat_lentokentat = None
+koordinaatit = None
 
 suunnat = {
             "1": 225,       # Lounas
@@ -44,23 +41,22 @@ def game_loop():
 
 
 # Liikuttaa pelaajaa valinnan perusteella
-def liikuta_pelaajaa(suunta):
+'''def liikuta_pelaajaa(suunta):
     global start_lat, start_lon
     print(f"Pelaaja valitsi suunnan: {suunta}")
     print("Lasketaan uudet koordinaatit...")
     sijainti = (start_lat, start_lon)
     uusi_sijainti = geodesic(kilometers=200).destination(sijainti, suunta)
     start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
-    print(f"Uudet koordinaatit: ({start_lat}, {start_lon})")
+    print(f"Uudet koordinaatit: ({start_lat}, {start_lon})")'''
 
 def kierros():
-    global pelaaja_id, kierros_count, lahimmat_lentokentat
+    global pelaaja_id, kierros_count, lahimmat_lentokentat, koordinaatit
     tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)                          # sql tiedot -kysely
+    koordinaatit = tiedot[0][0], tiedot[0][1]                                   # longitude latitude
     lahimmat_lentokentat = sql_koodit.mysql_query_close_airports(pelaaja_id)    # päivitä lähimmät kentät -kysely
-    # Print tiedot ruudulle kierroksen alussa
-    for rivit in tiedot:
-        location_lat, location_lon, fuel = rivit
-        print(f"PELAAJA: {pelaaja_id}\nLatitude: {location_lat}, Longitude: {location_lon}, Polttoaine: {fuel} \n")
+    maali_tiedot = sql_koodit.mysql_hae_maali(pelaaja_id, koordinaatit)         # hakee etäisyyden ankarasta, ilmatilan yms
+
     print("[SPACE]: Listaa lähimmät lentokentät [1]: Lounas [2]: Etelä [3]: Kaakko [4]: Länsi [6]: Itä [7]: Luode [8]: Pohjoinen [9]: Koillinen \n")
     syote = str(input(f"{kierros_count}. Kierros. Syötä ilmansuunta: "))
     # Jos annettu input on välilyönti => avaa valikon.
@@ -76,7 +72,7 @@ def kierros():
            kierros_count += 1'''
     else:
         suunta = suunnat.get(syote)
-        liikuta_pelaajaa(suunta)
+        #liikuta_pelaajaa(suunta)
         kierros_count += 1
 
 

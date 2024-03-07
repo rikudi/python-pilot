@@ -2,6 +2,7 @@
 # tietokantaan peliä varten #
 import mysql.connector
 from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
 yhteys = mysql.connector.connect(
     host="localhost",
     port=3306,
@@ -70,24 +71,23 @@ def mysql_query_tiedot(nimi):
     mytiedot = kursori.fetchall()
     return mytiedot
 
+def mysql_hae_maali(nimi, koordinaatit):
+    geolocator = Nominatim(user_agent=f"{nimi}")
+    location = geolocator.reverse(koordinaatit, language="fi")
+    if location == None:
+        print("Olet kansainvälisessä ilmatilassa")
+    else:
+        print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
 
-'''geolocator = Nominatim(user_agent="testi")
-location = geolocator.reverse(koordinaatit, language="fi")
-if location == None:
-    print("Olet kansainvälisessä ilmatilassa")
-else:
-    print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
+    print("Koordinaatit ja bensa:")
+    for x in mysql_query_tiedot(nimi):
+        print(x)
 
-print("Koordinaatit ja bensa:")
-for x in mysql_query_tiedot(nimi):
-    print(x)
+    # koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
+    Ankara = (40.128101348899996, 32.995098114)
 
-# koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
-Ankara = (40.128101348899996, 32.995098114)
-
-from geopy.distance import geodesic
-matka = geodesic(koordinaatit, Ankara).km
-print(matka, "Kilometriä ankaraan")'''
+    matka = geodesic(koordinaatit, Ankara).km
+    print(matka, "Kilometriä ankaraan\n")
 
 # Funktio nimen tarkistamiseen tietokannasta #
 
