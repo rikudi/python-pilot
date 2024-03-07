@@ -1,6 +1,6 @@
 from geopy.distance import geodesic
 from Komponentit import sql_koodit
-from Komponentit.Valikot import testi_menu
+from Komponentit.Valikot import valikko
 import time, os
 
 '''### Helsinki Vantaa koordinaatit ###
@@ -66,7 +66,7 @@ def kierros():
     # Jos annettu input on välilyönti => avaa valikon.
     if syote == " ":
         # Palauttaa pelaajan valitseman vaihtoehdon. Jos ei valintaa (Exit) => Kutsutaan kierros() uudestaan.
-       valinta = testi_menu.open_menu(lahimmat_lentokentat)
+       valinta = valikko.open_menu(lahimmat_lentokentat)
        if valinta is not None:
            print("valittu kenttä johon laskeudutaan (ICAO): ", valinta)
 
