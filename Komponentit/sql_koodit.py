@@ -8,7 +8,7 @@ yhteys = mysql.connector.connect(
     port=3306,
     database='python_pilot',  # vaiha
     user='root',
-    password='admin',         # vaiha
+    password='alakatomunsalasanaa',         # vaiha
     autocommit=True
 )
 
@@ -21,6 +21,12 @@ def mysql_update_polttoaine(nimi):
 #mysql_update_polttoaine(nimi)
 
 # funktio pelaajan nimen lisäämiseen tietokantaan ja pelaajalle syötetään alkuarvot tietokantaan"
+
+def mysql_game_over(pelaaja_tunnus):
+    sql = f"UPDATE game SET fuel = 100, location_lat = 60.3172, location_lon = 24.963301, kierrokset = 0 WHERE id = '{pelaaja_tunnus}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+
 def mysql_insert_alkuarvot(nimi):
     sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)"
     kursori = yhteys.cursor()

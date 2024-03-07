@@ -1,5 +1,6 @@
 from geopy.geocoders import Nominatim
 import mysql.connector
+from Komponentit import sql_koodit
 
 yhteys = mysql.connector.connect(
     host="localhost",
@@ -10,11 +11,14 @@ yhteys = mysql.connector.connect(
     autocommit=True
 )
 
-def ilma_tilatarkistus():
-    venaja_counter = 0
-    ukraina_counter = 0
 
-    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{nimi}'"
+def ilma_tilatarkistus(pelaaja_id):
+    global game_over, venaja_counter, ukraina_counter
+    if venaja_counter >= 4 or ukraina_counter >= 2:
+        print("Lentokoneesi ammuttiin alas.")
+        game_over = True
+
+    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{pelaaja_id}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     x = kursori.fetchone()
@@ -30,22 +34,17 @@ def ilma_tilatarkistus():
     elif location.raw['address']['country'] == "Venäjä":
         print("Olet Venäjän ilmatilassa. Poistu enintään kolmen kierroksen aikana tai lentokoneesi ammutaan alas")
         venaja_counter += 1
-        if venaja_counter == 4:
-            print("Lentokoneesi ammuttiin alas.")
-            game_over = True
+        print("COUNTER",venaja_counter)
         return
 
     elif location.raw['address']['country'] == "Ukraina":
         print("Olet Ukrainan ilmatilassa, poistu enintään kahden kierroksen aikana tai lentokoneesi ammutaan alas")
         ukraina_counter += 1
-        if ukraina_counter == 3:
-            print("Lentokoneesi ammuttiin alas.")
-            game_over = True
         return
 
     elif location.raw['address']['country'] == "Saksa":
         print("Olet Saksan ilmatilassa. Sinulla tulee pakottava tarve saada rinkeliä, laskeudut lähimmälle lentokentälle syömään.")
-        mysql_update_kierrokset()
+        sql_koodit.mysql_update_kierrokset(pelaaja_id)
         return
 
     else:

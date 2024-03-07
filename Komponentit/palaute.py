@@ -11,8 +11,8 @@ yhteys = mysql.connector.connect(
          )
 
 
-def palaute():
-    sql = 'SELECT kierrokset FROM game'
+def palaute(pelaaja_id):
+    sql = f"SELECT kierrokset FROM game WHERE id = '{pelaaja_id}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     tulos = kursori.fetchone()
@@ -27,7 +27,7 @@ def palaute():
         print("Matkasi pituus oli", kilometrit, "km! Suorituksesi oli tyydyttävä!")
     else:
         print("Matkasi pituus oli", kilometrit, "km! Suorituksesi oli huono!")
-
+'''
     while True:
         uusi_peli = input("Haluatko pelata uudestaan (kyllä/ei): ").lower()
         if uusi_peli == "kyllä":
@@ -38,3 +38,4 @@ def palaute():
             quit()
         else:
             print("Tarkista syöte.")
+'''
