@@ -9,15 +9,34 @@ yhteys = mysql.connector.connect(
     autocommit=True
 )
 
-# nimi = input("Anna pelinimi: ") #
-# def mysql_insert_alkuarvot(nimi): #
-  #  sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)" #
-   # kursori = yhteys.cursor() #
-    #kursori.execute(sql) #
-    # return #
- #mysql_insert_alkuarvot(nimi) #
+nimi = input("Anna pelinimi: ")
+def mysql_insert_alkuarvot(nimi):
+    sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    return
 
-nimi = "Testi1"
+# Tarkistaa onko pelaajan nimi jo tietokannassa #
+thelist = []
+def mysql_id_tarkistus(nimi):
+     sql = f"SELECT id FROM game WHERE EXISTS(SELECT id FROM game)"
+     kursori = yhteys.cursor()
+     kursori.execute(sql)
+     tiedot = kursori.fetchall()
+     for x in tiedot:
+         thelist.append(x)
+     return
+
+mysql_id_tarkistus(nimi)
+res = str(thelist)
+res = res.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("'", "")
+
+if nimi in res:
+    print(nimi, "Tietokannassa")
+else:
+    mysql_insert_alkuarvot(nimi)
+    print(nimi, "Lisätty")
+
 latitude = float(input("Enter latitude: "))
 longitude = float(input("Enter longitude: "))
 koordinaatit = latitude, longitude
@@ -59,13 +78,13 @@ Ankara = (40.128101348899996, 32.995098114)
 from geopy.distance import geodesic
 matka = geodesic(koordinaatit, Ankara).km
 print(matka, "Kilometriä ankaraan")
-def mysql_query_close_airports():
-    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 ORDER BY name"
+def mysql_query_close_airports(nimi):
+    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 AND game.id = '{nimi}' ORDER BY name"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     mytiedot = kursori.fetchall()
     return mytiedot
-for x in mysql_query_close_airports():
+for x in mysql_query_close_airports(nimi):
     print(x)
 
 ICAO = input("Anna ICAO koodi: ")
