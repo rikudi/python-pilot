@@ -87,3 +87,25 @@ Ankara = (40.128101348899996, 32.995098114)
 from geopy.distance import geodesic
 matka = geodesic(koordinaatit, Ankara).km
 print(matka, "Kilometriä ankaraan")
+
+# Funktio nimen tarkistamiseen tietokannasta #
+
+thelist = []
+def mysql_id_tarkistus(nimi):
+     sql = f"SELECT id FROM game WHERE EXISTS(SELECT id FROM game)"
+     kursori = yhteys.cursor()
+     kursori.execute(sql)
+     tiedot = kursori.fetchall()
+     for x in tiedot:
+         thelist.append(x)
+     return
+
+mysql_id_tarkistus(nimi)
+res = str(thelist)
+res = res.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("'", "")
+
+if nimi in res:
+    print(nimi, "Tietokannassa")
+else:
+    mysql_insert_alkuarvot(nimi)
+    print(nimi, "Lisätty")
