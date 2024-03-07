@@ -110,7 +110,12 @@ ohjeistus()
 while True:
     kysy = input("Oletko valmis aloittamaan?[kyllä = ENTER]: ")
     pelaaja_id = input("Anna pelaajatunnus: ")
-    sql_koodit.mysql_insert_alkuarvot(pelaaja_id)  # alkukysely
+    pelaaja_listassa = sql_koodit.mysql_id_tarkistus(pelaaja_id)
+    if pelaaja_listassa:
+        print(f"Nimi jo tietokannassa, jatketaan nimellä: '{pelaaja_id}'")
+    else:
+        print(f"Tervetuloa pelaamaan: '{pelaaja_id}'!")
+        sql_koodit.mysql_insert_alkuarvot(pelaaja_id)
     if kysy == "":
         game_loop()
     else:

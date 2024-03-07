@@ -91,22 +91,14 @@ print(matka, "Kilometriä ankaraan")'''
 
 # Funktio nimen tarkistamiseen tietokannasta #
 
-thelist = []
+#thelist = []
 def mysql_id_tarkistus(nimi):
-     sql = f"SELECT id FROM game WHERE EXISTS(SELECT id FROM game)"
-     kursori = yhteys.cursor()
-     kursori.execute(sql)
-     tiedot = kursori.fetchall()
-     for x in tiedot:
-         thelist.append(x)
-     return
+    sql = f"SELECT id FROM game WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    tiedot = kursori.fetchall()
 
-#mysql_id_tarkistus(nimi)
-res = str(thelist)
-res = res.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("'", "")
-
-'''if nimi in res:
-    print(nimi, "Tietokannassa")
-else:
-    mysql_insert_alkuarvot(nimi)
-    print(nimi, "Lisätty")'''
+    # Loopataan tiedoista saatu vastaus (pelaajan id) ja muutetaan stringiksi.
+    # jos funktion parametrina saadun nimen perusteella lista on tyhjä => kyseessä uusi pelaaja
+    lista = [str(rivi[0]) for rivi in tiedot]
+    return lista
