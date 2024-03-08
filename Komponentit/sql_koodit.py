@@ -1,12 +1,14 @@
 # Tällä koodilla yhdistetään tietokantaan. Voisi luoda erillisen käyttäjän #
 # tietokantaan peliä varten #
 import mysql.connector
+from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
 yhteys = mysql.connector.connect(
     host="localhost",
     port=3306,
-    database='flight_game',
+    database='python_pilot',  # vaiha
     user='root',
-    password='JokuSalasana',
+    password='alakatomunsalasanaa',         # vaiha
     autocommit=True
 )
 
@@ -16,15 +18,21 @@ def mysql_update_polttoaine(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-mysql_update_polttoaine(nimi)
+#mysql_update_polttoaine(nimi)
 
 # funktio pelaajan nimen lisäämiseen tietokantaan ja pelaajalle syötetään alkuarvot tietokantaan"
+
+def mysql_game_over(pelaaja_tunnus):
+    sql = f"UPDATE game SET fuel = 100, location_lat = 60.3172, location_lon = 24.963301, kierrokset = 0 WHERE id = '{pelaaja_tunnus}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+
 def mysql_insert_alkuarvot(nimi):
     sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-mysql_insert_alkuarvot(nimi)
+#mysql_insert_alkuarvot(nimi)
 
 # Funktio koordinaattien päivittämiseen tietokantaan #
 def mysql_update_coordinates(nimi, latitude, longitude):
@@ -32,17 +40,17 @@ def mysql_update_coordinates(nimi, latitude, longitude):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-mysql_update_coordinates(nimi, latitude, longitude)
+#mysql_update_coordinates(nimi, latitude, longitude)
 
 # Funktio lähimpien lentokenttien löytämiseen tietokannasta #
-def mysql_query_close_airports():
-    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 ORDER BY name"
+def mysql_query_close_airports(nimi):
+    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 and game.id = '{nimi}' ORDER BY name"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     mytiedot = kursori.fetchall()
     return mytiedot
-for x in mysql_query_close_airports():
-    print(x)
+'''for x in mysql_query_close_airports():
+    print(x)'''
 
 # Funktio kierrosten lisäämiseen tietokantaan #
 def mysql_update_kierrokset(nimi):
@@ -50,7 +58,7 @@ def mysql_update_kierrokset(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-mysql_update_kierrokset(nimi)
+#mysql_update_kierrokset(nimi)
 
 # Funktio lentokentälle laskeutumiseen ja bensan täyttämiseen#
 def mysql_update_laskeutuminen(nimi, ICAO):
@@ -58,7 +66,7 @@ def mysql_update_laskeutuminen(nimi, ICAO):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-mysql_update_laskeutuminen(nimi, ICAO)
+#mysql_update_laskeutuminen(nimi, ICAO)
 
 # Funktio pelaajan tietojen printtaamiseen. Latitude, longitude, maa, polttoaine, etäisyys Ankaraan, #
 # mahollinen lentokenttä, mahollinen tapahtuma #
@@ -69,43 +77,34 @@ def mysql_query_tiedot(nimi):
     mytiedot = kursori.fetchall()
     return mytiedot
 
-from geopy.geocoders import Nominatim
-geolocator = Nominatim(user_agent="testi")
-location = geolocator.reverse(koordinaatit, language="fi")
-if location == None:
-    print("Olet kansainvälisessä ilmatilassa")
-else:
-    print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
+def mysql_hae_maali(nimi, koordinaatit):
+    geolocator = Nominatim(user_agent=f"{nimi}")
+    location = geolocator.reverse(koordinaatit, language="fi")
+    if location == None:
+        print("Olet kansainvälisessä ilmatilassa")
+    else:
+        print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
 
-print("Koordinaatit ja bensa:")
-for x in mysql_query_tiedot(nimi):
-    print(x)
+    print("Koordinaatit ja bensa:")
+    for x in mysql_query_tiedot(nimi):
+        print(x)
 
-# koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
-Ankara = (40.128101348899996, 32.995098114)
+    # koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
+    Ankara = (40.128101348899996, 32.995098114)
 
-from geopy.distance import geodesic
-matka = geodesic(koordinaatit, Ankara).km
-print(matka, "Kilometriä ankaraan")
+    matka = geodesic(koordinaatit, Ankara).km
+    print(matka, "Kilometriä ankaraan\n")
 
 # Funktio nimen tarkistamiseen tietokannasta #
 
-thelist = []
+#thelist = []
 def mysql_id_tarkistus(nimi):
-     sql = f"SELECT id FROM game WHERE EXISTS(SELECT id FROM game)"
-     kursori = yhteys.cursor()
-     kursori.execute(sql)
-     tiedot = kursori.fetchall()
-     for x in tiedot:
-         thelist.append(x)
-     return
+    sql = f"SELECT id FROM game WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    tiedot = kursori.fetchall()
 
-mysql_id_tarkistus(nimi)
-res = str(thelist)
-res = res.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("'", "")
-
-if nimi in res:
-    print(nimi, "Tietokannassa")
-else:
-    mysql_insert_alkuarvot(nimi)
-    print(nimi, "Lisätty")
+    # Loopataan tiedoista saatu vastaus (pelaajan id) ja muutetaan stringiksi.
+    # jos funktion parametrina saadun nimen perusteella lista on tyhjä => kyseessä uusi pelaaja
+    lista = [str(rivi[0]) for rivi in tiedot]
+    return lista

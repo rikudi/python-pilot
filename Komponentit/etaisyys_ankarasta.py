@@ -12,12 +12,12 @@ yhteys = mysql.connector.connect(
          )
 
 
-def etaisyys_ankara():
-    sql = 'SELECT location_lat, location_lon FROM game'
+def etaisyys_ankara(pelaaja_id):
+    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{pelaaja_id}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     tulos = kursori.fetchall()
 
     nykyinen_sijainti = (tulos[0][0], tulos[0][1])
-    ankara = (40.128101348899996,-32.995098114)
+    ankara = (40.128101348899996, 32.995098114)
     print("Etäisyys määränpäästä:", round(great_circle(nykyinen_sijainti,ankara).kilometers),"km")

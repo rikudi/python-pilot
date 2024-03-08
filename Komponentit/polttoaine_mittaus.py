@@ -9,22 +9,19 @@ yhteys = mysql.connector.connect(
          autocommit=True
          )
 
-def polttoaine_mittaus():
-    sql = 'SELECT fuel FROM game'
+def polttoaine_mittaus(pelaaja_id):
+    global game_over
+    sql = f"SELECT fuel FROM game WHERE id = '{pelaaja_id}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     x = kursori.fetchone()
     x = (x[0])
-    bensa_loppu = 0
 
-    if x == 400:
+    if x == 40:
         print("Varoitus! Polttoainetta jäljellä 40%.")
-    elif x == 200:
+    elif x == 20:
         print("Varoitus! Polttoainetta jäjellä 20%")
-    elif x == 0 and bensa_loppu == 0:
-        print("Varoitus! Polttoaineesi on lähes loppu! Laskeudu välittömästi lähimmälle lentokentälle.")
-        bensa_loppu =+ 1
-    elif x == 0 and bensa_loppu == 1:
-            print("Lentokoneesi putoaa.")
-            bensa_loppu = 0  #Resettaa bensa_loppu mittauksen, en oo varma onko tarpeellinen
-            game_over = True
+    elif x <= 0:
+        print("Lentokoneesi putoaa.")
+        game_over = True
+

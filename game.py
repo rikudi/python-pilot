@@ -1,11 +1,12 @@
 from geopy.distance import geodesic
-import time, os
+from Komponentit import sql_koodit
+from Komponentit.Valikot import valikko
+import time
 
-### Helsinki Vantaa koordinaatit ###
-start_lat = 60.3172
-start_lon = 24.963301
-####################################
 kierros_count = 1
+pelaaja_id = None
+lahimmat_lentokentat = None
+koordinaatit = None
 
 suunnat = {
             "1": 225,       # Lounas
@@ -32,31 +33,48 @@ def game_loop():
     running = True
     game_over = False
 
-    print("Peli alkaa... Lentokoneesi on noussut Helsinki-Vantaan lentokentältä ilmaan.")
-    time.sleep(2.5)
+    print("Peli alkaa... Lentokoneesi on noussut Helsinki-Vantaan lentokentältä ilmaan.\n")
+    #time.sleep(2.5)
     while running:
         time.sleep(0.5)  # 0.5s tauko looppien välillä
         kierros()
 
 
 # Liikuttaa pelaajaa valinnan perusteella
-def liikuta_pelaajaa(suunta):
-    global start_lat, start_lon, pelaajan_valinta
+'''def liikuta_pelaajaa(suunta):
+    global start_lat, start_lon
     print(f"Pelaaja valitsi suunnan: {suunta}")
     print("Lasketaan uudet koordinaatit...")
     sijainti = (start_lat, start_lon)
     uusi_sijainti = geodesic(kilometers=200).destination(sijainti, suunta)
     start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
-    print(f"Uudet koordinaatit: ({start_lat}, {start_lon})")
+    print(f"Uudet koordinaatit: ({start_lat}, {start_lon})")'''
 
 def kierros():
-    global kierros_count
-    print(f"Pelaajan sijainti: {start_lon}, {start_lat} ")
-    print("[1]: Lounas [2]: Etelä [3]: Kaakko [4]: Länsi [6]: Itä [7]: Luode [8]: Pohjoinen [9]: Koillinen \n")
+    global pelaaja_id, kierros_count, lahimmat_lentokentat, koordinaatit
+    tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)                          # sql tiedot -kysely
+    koordinaatit = tiedot[0][0], tiedot[0][1]                                   # longitude latitude
+    lahimmat_lentokentat = sql_koodit.mysql_query_close_airports(pelaaja_id)    # päivitä lähimmät kentät -kysely
+    maali_tiedot = sql_koodit.mysql_hae_maali(pelaaja_id, koordinaatit)         # hakee etäisyyden ankarasta, ilmatilan yms
+
+    print("[SPACE]: Listaa lähimmät lentokentät [1]: Lounas [2]: Etelä [3]: Kaakko [4]: Länsi [6]: Itä [7]: Luode [8]: Pohjoinen [9]: Koillinen \n")
     syote = str(input(f"{kierros_count}. Kierros. Syötä ilmansuunta: "))
-    kierros_count += 1
-    suunta = suunnat.get(syote)
-    liikuta_pelaajaa(suunta)
+    # Jos annettu input on välilyönti => avaa valikon.
+    if syote == " ":
+        # Palauttaa pelaajan valitseman vaihtoehdon. Jos ei valintaa (Exit) => Kutsutaan kierros() uudestaan.
+       valinta = valikko.open_menu(lahimmat_lentokentat)
+       if valinta is not None:
+           print("valittu kenttä johon laskeudutaan (ICAO): ", valinta)
+
+           ## tässä kohtaa ajetaan laskeutuminen
+           '''suunta = suunnat.get(syote)
+           liikuta_pelaajaa(suunta)
+           kierros_count += 1'''
+    else:
+        suunta = suunnat.get(syote)
+        #liikuta_pelaajaa(suunta)
+        kierros_count += 1
+
 
 def ohjeistus():
     ohje = """
@@ -87,6 +105,13 @@ ohjeistus()
 
 while True:
     kysy = input("Oletko valmis aloittamaan?[kyllä = ENTER]: ")
+    pelaaja_id = input("Anna pelaajatunnus: ")
+    pelaaja_listassa = sql_koodit.mysql_id_tarkistus(pelaaja_id)
+    if pelaaja_listassa:
+        print(f"Nimi jo tietokannassa, jatketaan nimellä: '{pelaaja_id}'")
+    else:
+        print(f"Tervetuloa pelaamaan: '{pelaaja_id}'!")
+        sql_koodit.mysql_insert_alkuarvot(pelaaja_id)
     if kysy == "":
         game_loop()
     else:
