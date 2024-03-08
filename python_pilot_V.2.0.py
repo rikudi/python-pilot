@@ -64,38 +64,44 @@ def ilma_tilatarkistus(pelaaja_id):
     geolocator = Nominatim(user_agent="testi")
     location = geolocator.reverse((lat, lon), language="fi")
 
-    if location is None:
-        print("Olet kansainvälisessä ilmatilassa.")
-        return
-
-    elif location.raw['address']['country'] == "Venäjä":
-        print(Fore.RED, "Olet Venäjän ilmatilassa. Poistu enintään kolmen kierroksen aikana tai lentokoneesi ammutaan alas", Style.RESET_ALL)
-        venaja_counter += 1
-        print(Fore.RED, "COUNTER",venaja_counter, Style.RESET_ALL)
-        return
-
-    elif location.raw['address']['country'] == "Ukraina":
-        print(Fore.RED, "Olet Ukrainan ilmatilassa, poistu enintään kahden kierroksen aikana tai lentokoneesi ammutaan alas", Style.RESET_ALL)
-        ukraina_counter += 1
-        print(Fore.RED, "COUNTER",ukraina_counter, Style.RESET_ALL)
-        return
-
-    elif location.raw['address']['country'] == "Saksa":
-        print("Olet maan Saksa ilmatilassa")
-        saksa_counter += 1
-        if saksa_counter == 1:
-            print("Sinulla tulee pakottava tarve saada rinkeliä, laskeudut lähimmälle lentokentälle syömään.")
-            print("Laskeudutaan...")
-            time.sleep(2)
-            print("Masu on täynnä, kone nousee takaisin ilmaan.")
-            time.sleep(2)
-            sql_koodit.mysql_update_kierrokset(pelaaja_id)
+    if not game_over:
+        if location is None:
+            print("Olet kansainvälisessä ilmatilassa.")
             return
-        return
+
+        elif location.raw['address']['country'] == "Venäjä":
+            print(Fore.RED,
+                  "Olet Venäjän ilmatilassa. Poistu enintään kolmen kierroksen aikana tai lentokoneesi ammutaan alas",
+                  Style.RESET_ALL)
+            venaja_counter += 1
+            print(Fore.RED, "COUNTER", venaja_counter, Style.RESET_ALL)
+            return
+
+        elif location.raw['address']['country'] == "Ukraina":
+            print(Fore.RED,
+                  "Olet Ukrainan ilmatilassa, poistu enintään kahden kierroksen aikana tai lentokoneesi ammutaan alas",
+                  Style.RESET_ALL)
+            ukraina_counter += 1
+            print(Fore.RED, "COUNTER", ukraina_counter, Style.RESET_ALL)
+            return
+
+        elif location.raw['address']['country'] == "Saksa":
+            print("Olet maan Saksa ilmatilassa")
+            saksa_counter += 1
+            if saksa_counter == 1:
+                print("Sinulla tulee pakottava tarve saada rinkeliä, laskeudut lähimmälle lentokentälle syömään.")
+                print("Laskeudutaan...")
+                time.sleep(2)
+                print("Masu on täynnä, kone nousee takaisin ilmaan.")
+                time.sleep(2)
+                sql_koodit.mysql_update_kierrokset(pelaaja_id)
+                return
+            return
 
     else:
         print("Olet maan", location.raw['address']['country'], "ilmatilassa.\n")
         return
+
 def polttoaine_mittaus(pelaaja_id):
     global game_over
     sql = f"SELECT fuel FROM game WHERE id = '{pelaaja_id}'"
@@ -104,18 +110,19 @@ def polttoaine_mittaus(pelaaja_id):
     x = kursori.fetchone()
     x = (x[0])
 
-    if x == 40:
-        print(Fore.RED, "Varoitus! Polttoainetta jäljellä 40%.", Style.RESET_ALL)
-    elif x == 20:
-        print(Fore.RED, "Varoitus! Polttoainetta jäljellä 20%.", Style.RESET_ALL)
-    elif x <= 0:
-        print(Fore.RED, "Lentokoneesi putoaa.", Style.RESET_ALL)
-        game_over = True
+    if not game_over:
+        if x == 40:
+            print(Fore.RED, "Varoitus! Polttoainetta jäljellä 40%.", Style.RESET_ALL)
+        elif x == 20:
+            print(Fore.RED, "Varoitus! Polttoainetta jäljellä 20%.", Style.RESET_ALL)
+        elif x <= 0:
+            print(Fore.RED, "Lentokoneesi putoaa.", Style.RESET_ALL)
+            game_over = True
 
 
 # Peli ydin-looppi.
 def game_loop():
-    global game_over, venaja_counter, ukraina_counter, start_lat, start_lon
+    global game_over, venaja_counter, ukraina_counter, saksa_counter, start_lat, start_lon
     tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)
     start_lat, start_lon = tiedot[0][0], tiedot[0][1]
 
@@ -128,6 +135,9 @@ def game_loop():
         kierros()
         if game_over:
             sql_koodit.mysql_game_over(pelaaja_id)
+            venaja_counter = 0
+            ukraina_counter = 0
+            saksa_counter = 0
             kirjoittaja_normal("Peli päättyi! Lentokoneesi tuhoutui.")
             kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ")
             if kysymys == "ei":
@@ -142,11 +152,12 @@ def game_loop():
 # Liikuttaa pelaajaa valinnan perusteella
 def liikuta_pelaajaa(suunta):
     global start_lat, start_lon
-    kirjoittaja_normal("\nLasketaan uudet koordinaatit...\n")
-    sijainti = (start_lat, start_lon)
-    uusi_sijainti = geodesic(kilometers=200).destination(sijainti, suunta)
-    start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
-    sql_koodit.mysql_update_coordinates(pelaaja_id, start_lat, start_lon)
+    if not game_over:
+        kirjoittaja_normal("\nLasketaan uudet koordinaatit...\n")
+        sijainti = (start_lat, start_lon)
+        uusi_sijainti = geodesic(kilometers=200).destination(sijainti, suunta)
+        start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
+        sql_koodit.mysql_update_coordinates(pelaaja_id, start_lat, start_lon)
 
 def kierros():
     global pelaaja_id, kierros_count, lahimmat_lentokentat, game_over
@@ -196,7 +207,6 @@ def kierros():
 
     else:
         suunta = suunnat.get(syote)
-        print("\n########################################################################")
         liikuta_pelaajaa(suunta)
         sql_koodit.mysql_update_kierrokset(pelaaja_id)
         sql_koodit.mysql_update_polttoaine(pelaaja_id)
