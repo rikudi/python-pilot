@@ -1,23 +1,15 @@
-import os
+import os, time
 
 from geopy.distance import geodesic
-from Komponentit import sql_koodit
 from Komponentit.Valikot import valikko
-from Komponentit import etaisyys_ankarasta, polttoaine_mittaus, palaute
-from Työkalut.kirjotin import kirjoittaja_fast, kirjoittaja_normal, kirjoittaja_slow
-import time
-import mysql.connector
+from Komponentit import etaisyys_ankarasta
+from Komponentit.Tietokanta import palaute, sql_koodit
+from Komponentit.Muut.ohjeistus import ohjeistus
+from Työkalut.kirjotin import fast, normal, slow
 from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
 
-yhteys = mysql.connector.connect(
-    host="localhost",
-    port=3306,
-    database='python_pilot',
-    user='root',
-    password='admin',
-    autocommit=True
-)
+### GLOBAL-MUUTTUJAT ###
 
 init() #colorama init
 start_lat = None
@@ -30,7 +22,7 @@ venaja_counter = 0
 ukraina_counter = 0
 saksa_counter = 0
 
-
+### NÄPPÄIMET
 suunnat = {
             "1": 225,       # Lounas
             "2": 180,       # Etelä
@@ -40,7 +32,6 @@ suunnat = {
             "7": 315,       # Luode
             "8": 0,         # Pohjoinen
             "9": 45,        # Koillinen
-            "H": 'nayta_ohjeet',
             "KP1": 225,     # Lounas
             "KP2": 180,     # Etelä
             "KP3": 135,     # Kaakko
@@ -49,22 +40,46 @@ suunnat = {
             "KP7": 315,     # Luode
             "KP8": 0,       # Pohjoinen
             "KP9": 45,      # Koillinen
+            " ": None       # Valikko
         }
 
+### GAME_LOOP - Pelin ydinfunktio jota kutsutaan niin kauan kunnes game_over = TRUE ###
+def game_loop():
+    # Tietokannasta saadut arvot asetetaan global muuttujiin ja niitä päivitetään pelin aikana
+    global game_over, venaja_counter, ukraina_counter, saksa_counter, start_lat, start_lon
+    tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)
+    start_lat, start_lon = tiedot[0][0], tiedot[0][1]
+
+    normal("Peli alkaa... Lentokoneesi on noussut lentokentältä ilmaan.\n")
+    time.sleep(2.5)
+    while not game_over:
+        kierros()
+        if game_over:
+            sql_koodit.mysql_game_over(pelaaja_id)
+            venaja_counter = 0
+            ukraina_counter = 0
+            saksa_counter = 0
+            normal("Peli päättyi! Lentokoneesi tuhoutui.")
+            kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ")
+            if kysymys == "ei":
+                normal("Näkemiin!")
+                quit()
+            else:
+                slow("Aloitetaan alusta...")
+                time.sleep(1)
+                game_over = False
+                game_loop()
+
+### ILMATILAN TARKISTUS JA TAPAHTUMIEN KÄSITTELY ###
 def ilma_tilatarkistus(pelaaja_id):
     global game_over, venaja_counter, ukraina_counter, saksa_counter
     if venaja_counter >= 4 or ukraina_counter >= 2:
         print(Fore.RED, "Lentokoneesi ammuttiin alas.", Style.RESET_ALL)
         game_over = True
 
-    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{pelaaja_id}'"
-    kursori = yhteys.cursor()
-    kursori.execute(sql)
-    x = kursori.fetchone()
-    lat, lon = x
-
+    koordinaatit = sql_koodit.mysql_hae_koordinaatit(pelaaja_id)
     geolocator = Nominatim(user_agent="testi")
-    location = geolocator.reverse((lat, lon), language="fi")
+    location = geolocator.reverse(koordinaatit, language="fi")
 
     if not game_over:
         if location is None:
@@ -99,68 +114,34 @@ def ilma_tilatarkistus(pelaaja_id):
                 sql_koodit.mysql_update_kierrokset(pelaaja_id)
                 return
             return
-
     else:
         print("Olet maan", location.raw['address']['country'], "ilmatilassa.\n")
         return
 
+### POLTTOAINEEN PÄIVITYS JA KÄSITTELY
 def polttoaine_mittaus(pelaaja_id):
     global game_over
-    sql = f"SELECT fuel FROM game WHERE id = '{pelaaja_id}'"
-    kursori = yhteys.cursor()
-    kursori.execute(sql)
-    x = kursori.fetchone()
-    x = (x[0])
-
+    fuel = sql_koodit.mysql_hae_polttoaine(pelaaja_id)
     if not game_over:
-        if x == 40:
+        if fuel == 40:
             print(Fore.RED, "Varoitus! Polttoainetta jäljellä 40%.", Style.RESET_ALL)
-        elif x == 20:
+        elif fuel == 20:
             print(Fore.RED, "Varoitus! Polttoainetta jäljellä 20%.", Style.RESET_ALL)
-        elif x <= 0:
+        elif fuel <= 0:
             print(Fore.RED, "Lentokoneesi putoaa.", Style.RESET_ALL)
             game_over = True
 
-
-# Peli ydin-looppi.
-def game_loop():
-    global game_over, venaja_counter, ukraina_counter, saksa_counter, start_lat, start_lon
-    tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)
-    start_lat, start_lon = tiedot[0][0], tiedot[0][1]
-
-
-    kirjoittaja_normal("Peli alkaa... Lentokoneesi on noussut lentokentältä ilmaan.\n")
-    time.sleep(2.5)
-    while not game_over:
-
-        time.sleep(1)  # 0.5s tauko looppien välillä
-        kierros()
-        if game_over:
-            sql_koodit.mysql_game_over(pelaaja_id)
-            venaja_counter = 0
-            ukraina_counter = 0
-            saksa_counter = 0
-            kirjoittaja_normal("Peli päättyi! Lentokoneesi tuhoutui.")
-            kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ")
-            if kysymys == "ei":
-                kirjoittaja_normal("Näkemiin!")
-                quit()
-            else:
-                kirjoittaja_slow("Aloitetaan alusta...")
-                time.sleep(1)
-                game_over = False
-                game_loop()
-
-# Liikuttaa pelaajaa valinnan perusteella
+### PELAAJAN LIIKE JA SIJAINNIN PÄIVITYS ###
 def liikuta_pelaajaa(suunta):
     global start_lat, start_lon
     if not game_over:
-        kirjoittaja_normal("\nLasketaan uudet koordinaatit...\n")
+        normal("\nLasketaan uudet koordinaatit...\n")
         sijainti = (start_lat, start_lon)
         uusi_sijainti = geodesic(kilometers=200).destination(sijainti, suunta)
         start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
         sql_koodit.mysql_update_coordinates(pelaaja_id, start_lat, start_lon)
 
+### KIERROS
 def kierros():
     global pelaaja_id, kierros_count, lahimmat_lentokentat, game_over
     tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)                          # sql tiedot -kysely
@@ -168,20 +149,20 @@ def kierros():
     # Print tiedot ruudulle kierroksen alussa
     for rivit in tiedot:
         location_lat, location_lon, fuel = rivit
-        kirjoittaja_fast(f"\n[Sijainti]: Latitude {location_lat} | Longitude {location_lon} ")
-        kirjoittaja_fast(f"\n[Polttoaine]: {fuel}%\n")
-    kirjoittaja_fast("\n[SPACE]: Listaa lähimmät lentokentät [1]: Lounas [2]: Etelä [3]: Kaakko [4]: Länsi [6]: Itä [7]: Luode [8]: Pohjoinen [9]: Koillinen \n")
+        fast(f"\n[Sijainti]: Latitude {location_lat} | Longitude {location_lon} ")
+        fast(f"\n[Polttoaine]: {fuel}%\n")
+    fast("\n[SPACE]: Listaa lähimmät lentokentät [1]: Lounas [2]: Etelä [3]: Kaakko [4]: Länsi [6]: Itä [7]: Luode [8]: Pohjoinen [9]: Koillinen \n")
     syote = str(input(f"Syötä ilmansuunta: "))
-    while syote != "1" and syote != "2" and syote != "3" and syote != "4" and syote != "5" and syote != "6" and syote != "7" and syote != "8" and syote != "9" and syote != " ":
+    while syote not in suunnat:
         print("Yritä uudelleen")
-        syote = str(input(f"{kierros_count}. Kierros. Syötä ilmansuunta: "))
+        syote = str(input(f"Syötä ilmansuunta: "))
     # Jos annettu input on välilyönti => avaa valikon.
     if syote == " ":
-        # Palauttaa pelaajan valitseman vaihtoehdon. Jos ei valintaa (Exit) => Kutsutaan kierros() uudestaan.
+        # Palauttaa valikosta valitun vaihtoehdon arvon muuttujaan valinta. Jos valinta == None => Kutsutaan kierros() uudestaan.
        valinta = valikko.open_menu(lahimmat_lentokentat)
        if valinta is not None:
            if valinta == "LTAC":
-               print("Olet laskeutunut Ankaraan. Peli päättyy.")
+               normal("Olet laskeutunut Ankaraan. Peli päättyy.")
                game_over = True
                palaute.palaute(pelaaja_id)
                sql_koodit.mysql_game_over(pelaaja_id)
@@ -194,20 +175,17 @@ def kierros():
                    time.sleep(5)
                    game_over = False
                    game_loop()
-
-           print("Valittu kenttä johon laskeudutaan (ICAO): ", valinta)
+           normal(f"Valittu kenttä johon laskeudutaan (ICAO): {valinta}")
            sql_koodit.mysql_update_laskeutuminen(pelaaja_id, valinta)
            time.sleep(1)
-           print("Tankataan.....")
+           normal("Tankataan.....")
            time.sleep(2)
-           print("Lentokone nousee takaisin ilmaan.")
+           normal("Lentokone nousee takaisin ilmaan.")
            ilma_tilatarkistus(pelaaja_id)
            etaisyys_ankarasta.etaisyys_ankara(pelaaja_id)
            kierros_count += 1
-
-
-
     else:
+        # Päivittää pelaajan uuden sijainnin ja kutsuu tarvittavat sql-kyselyt
         suunta = suunnat.get(syote)
         print("\n##########################################################################")
         liikuta_pelaajaa(suunta)
@@ -217,33 +195,7 @@ def kierros():
         etaisyys_ankarasta.etaisyys_ankara(pelaaja_id)
         polttoaine_mittaus(pelaaja_id)
 
-
-def ohjeistus():
-    ohje = """
-Tervetuloa pelaamaan Python Pilottia!
-Pelin tavoitteena on saapua Ankaran lentokentälle mahdollisimman vähin siirroin, lähtöpaikkasi on Helsinki-Vantaan lentokenttä. 
-Yhdellä siirrolla lentokone liikkuu 200km haluttuun ilmansuuntaan.
-Lentokone on täysin tankattu pelin alussa, jolla voit kulkea maksimissaan 1000 kilometriä. Aina kun laskeudut lähimmälle lentokentälle,
-lentokoneen tankki täytetään 100 %.
-
-Pelin näppäimet :
-Num 1: Lounas
-Num 2: Etelä
-Num 3: Kaakko
-Num 4: Länsi
-Num 6: Itä
-Num 7: Luode
-Num 8: Pohjoinen
-Num 9: Koillinen
-SPACE: Avaa valikon, jossa on viisi lähintä lentokenttää. Kentät on numeroitu 1–5. Painamalla halutun lentokentän numeroa, kone laskeutuu
-sinne.
-H: ohjeet ja opasteet
-
-"""
-    kirjoittaja_fast(ohje)
-
-
-
+### ALOITUS ###
 ohjeistus()
 
 while True:
@@ -262,5 +214,5 @@ while True:
         os.system('cls')
         break
 
-
 game_loop()
+############

@@ -1,8 +1,8 @@
 from geopy.distance import geodesic
-from Komponentit import sql_koodit
 from Komponentit.Valikot import valikko
-from Komponentit import etaisyys_ankarasta, polttoaine_mittaus, palaute
-import time, os
+from Komponentit import etaisyys_ankarasta, polttoaine_mittaus
+from Komponentit.Tietokanta import palaute, sql_koodit
+import time
 import mysql.connector
 from geopy.geocoders import Nominatim
 

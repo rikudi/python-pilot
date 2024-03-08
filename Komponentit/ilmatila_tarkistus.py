@@ -1,6 +1,6 @@
 from geopy.geocoders import Nominatim
 import mysql.connector
-from Komponentit import sql_koodit
+from Komponentit.Tietokanta import sql_koodit
 
 yhteys = mysql.connector.connect(
     host="localhost",

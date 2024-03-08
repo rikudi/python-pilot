@@ -1,5 +1,4 @@
-from geopy.distance import geodesic
-from Komponentit import sql_koodit
+from Komponentit.Tietokanta import sql_koodit
 from Komponentit.Valikot import valikko
 import time
 
