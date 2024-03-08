@@ -1,3 +1,5 @@
+import os
+
 from geopy.distance import geodesic
 from Komponentit import sql_koodit
 from Komponentit.Valikot import valikko
@@ -207,6 +209,7 @@ def kierros():
 
     else:
         suunta = suunnat.get(syote)
+        print("\n##########################################################################")
         liikuta_pelaajaa(suunta)
         sql_koodit.mysql_update_kierrokset(pelaaja_id)
         sql_koodit.mysql_update_polttoaine(pelaaja_id)
@@ -251,10 +254,12 @@ while True:
     pelaaja_listassa = sql_koodit.mysql_id_tarkistus(pelaaja_id)
     if pelaaja_listassa:
         print(f"Nimi jo tietokannassa, jatketaan nimellä: '{pelaaja_id}'")
+        os.system('cls')
         break
     else:
         print(f"Tervetuloa pelaamaan: '{pelaaja_id}'!")
         sql_koodit.mysql_insert_alkuarvot(pelaaja_id)
+        os.system('cls')
         break
 
 
