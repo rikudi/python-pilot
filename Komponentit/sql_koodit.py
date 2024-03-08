@@ -6,9 +6,9 @@ from geopy.distance import geodesic
 yhteys = mysql.connector.connect(
     host="localhost",
     port=3306,
-    database='python_pilot',  # vaiha
+    database='flight_game',  # vaiha
     user='root',
-    password='alakatomunsalasanaa',         # vaiha
+    password='jokusalasana',         # vaiha
     autocommit=True
 )
 
@@ -44,7 +44,7 @@ def mysql_update_coordinates(nimi, latitude, longitude):
 
 # Funktio lähimpien lentokenttien löytämiseen tietokannasta #
 def mysql_query_close_airports(nimi):
-    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 and game.id = '{nimi}' ORDER BY name"
+    sql = f"SELECT name AS lentokentät, ident AS icao FROM airport CROSS JOIN game WHERE type IN('medium_airport', 'large_airport') AND latitude_deg BETWEEN location_lat - 3 and location_lat + 3 AND longitude_deg BETWEEN location_lon - 3 and location_lon + 3 and game.id = '{nimi}' AND CHAR_LENGTH(ident)=4 ORDER BY name"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     mytiedot = kursori.fetchall()
