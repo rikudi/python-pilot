@@ -11,18 +11,19 @@ yhteys = mysql.connector.connect(
     port=3306,
     database='python_pilot',
     user='root',
-    password='alakatomunsalasanaa',
+    password='admin',
     autocommit=True
 )
 
-start_lat = 60.3172
-start_lon = 24.963301
+start_lat = None
+start_lon = None
 kierros_count = 1
 pelaaja_id = None
 lahimmat_lentokentat = None
 game_over = False
 venaja_counter = 0
 ukraina_counter = 0
+on_uusi_pelaaja = False
 
 
 suunnat = {
@@ -106,7 +107,13 @@ def polttoaine_mittaus(pelaaja_id):
 def game_loop():
     global game_over, venaja_counter, ukraina_counter, start_lat, start_lon
 
-    print("Peli alkaa... Lentokoneesi on noussut Helsinki-Vantaan lentokentältä ilmaan.\n")
+    if on_uusi_pelaaja:
+        print("Peli alkaa... Lentokoneesi on noussut Helsinki-Vantaan lentokentältä ilmaan.\n")
+        time.sleep(1.5)
+    else:
+        print("Jatketaan peliä...\n")
+        time.sleep(1.5)
+
     #time.sleep(2.5)
     while not game_over:
 
@@ -132,8 +139,9 @@ def liikuta_pelaajaa(suunta):
     sql_koodit.mysql_update_coordinates(pelaaja_id, start_lat, start_lon)
 
 def kierros():
-    global pelaaja_id, kierros_count, lahimmat_lentokentat, game_over
+    global pelaaja_id, kierros_count, lahimmat_lentokentat, game_over, start_lat, start_lon
     tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)                          # sql tiedot -kysely
+    start_lat, start_lon = tiedot[0][0], tiedot[0][1]
     lahimmat_lentokentat = sql_koodit.mysql_query_close_airports(pelaaja_id)    # päivitä lähimmät kentät -kysely
     # Print tiedot ruudulle kierroksen alussa
     for rivit in tiedot:
@@ -212,10 +220,12 @@ while True:
     pelaaja_listassa = sql_koodit.mysql_id_tarkistus(pelaaja_id)
     if pelaaja_listassa:
         print(f"Nimi jo tietokannassa, jatketaan nimellä: '{pelaaja_id}'")
+        on_uusi_pelaaja = False
         break
     else:
         print(f"Tervetuloa pelaamaan: '{pelaaja_id}'!")
         sql_koodit.mysql_insert_alkuarvot(pelaaja_id)
+        on_uusi_pelaaja = True
         break
 
 

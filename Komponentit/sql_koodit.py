@@ -8,7 +8,7 @@ yhteys = mysql.connector.connect(
     port=3306,
     database='python_pilot',  # vaiha
     user='root',
-    password='alakatomunsalasanaa',         # vaiha
+    password='admin',         # vaiha
     autocommit=True
 )
 
