@@ -162,13 +162,14 @@ def kierros():
        valinta = valikko.open_menu(lahimmat_lentokentat)
        if valinta is not None:
            if valinta == "LTAC":
-               normal("Olet laskeutunut Ankaraan. Peli päättyy.")
+               normal("Olet laskeutunut Ankaraan. Peli päättyy.\n")
                game_over = True
                palaute.palaute(pelaaja_id)
                sql_koodit.mysql_game_over(pelaaja_id)
-               kysymys2 = input("Haluatko pelata uudestaan?[kyllä/ei]: ")
+               kysymys2 = input("\nHaluatko pelata uudestaan?[kyllä/ei]: ")
                if kysymys2 == "ei":
                    print("Näkemiin!")
+                   time.sleep(2)
                    quit()
                else:
                    print("Aloitetaan alusta...")
@@ -178,9 +179,9 @@ def kierros():
            normal(f"Valittu kenttä johon laskeudutaan (ICAO): {valinta}")
            sql_koodit.mysql_update_laskeutuminen(pelaaja_id, valinta)
            time.sleep(1)
-           normal("Tankataan.....")
+           normal("\nTankataan.....")
            time.sleep(2)
-           normal("Lentokone nousee takaisin ilmaan.")
+           normal("\nLentokone nousee takaisin ilmaan.\n")
            ilma_tilatarkistus(pelaaja_id)
            etaisyys_ankarasta.etaisyys_ankara(pelaaja_id)
            kierros_count += 1
@@ -192,7 +193,7 @@ def kierros():
         sql_koodit.mysql_update_kierrokset(pelaaja_id)
         sql_koodit.mysql_update_polttoaine(pelaaja_id)
         ilma_tilatarkistus(pelaaja_id)
-        etaisyys_ankarasta.etaisyys_ankara(pelaaja_id)
+        sql_koodit.etaisyys_ankara(pelaaja_id)
         polttoaine_mittaus(pelaaja_id)
 
 ### ALOITUS ###
@@ -206,6 +207,7 @@ while True:
     pelaaja_listassa = sql_koodit.mysql_id_tarkistus(pelaaja_id)
     if pelaaja_listassa:
         print(f"Nimi jo tietokannassa, jatketaan nimellä: '{pelaaja_id}'")
+        time.sleep(2.5)
         os.system('cls')
         break
     else:
