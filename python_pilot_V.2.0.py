@@ -10,15 +10,6 @@ from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
 import mysql.connector
 
-yhteys = mysql.connector.connect(
-    host="localhost",
-    port=3306,
-    database='python_pilot',  # vaiha
-    user='root',
-    password='admin',         # vaiha
-    autocommit=True
-)
-
 ### GLOBAL-MUUTTUJAT ###
 
 init() #colorama init
