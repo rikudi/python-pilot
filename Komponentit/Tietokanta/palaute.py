@@ -1,14 +1,5 @@
-import mysql.connector
+from Komponentit.Tietokanta import sql_koodit
 
-
-yhteys = mysql.connector.connect(
-         host='127.0.0.1',
-         port= 3306,
-         database='python_pilot',
-         user='root',
-         password='admin',
-         autocommit=True
-         )
 '''
 def palaute(pelaaja_id):
     sql = f"SELECT kierrokset, high_score FROM game WHERE id = '{pelaaja_id}'"
@@ -49,7 +40,7 @@ def palaute(pelaaja_id):
 
 def palaute(pelaaja_id):
     sql = f"SELECT kierrokset FROM game WHERE id = '{pelaaja_id}'"
-    kursori = yhteys.cursor()
+    kursori = sql_koodit.yhteys.cursor()
     kursori.execute(sql)
     tulos = kursori.fetchone()
     x = (tulos[0])

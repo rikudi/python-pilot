@@ -1,17 +1,17 @@
 import time, sys
-def normal(teksti):
+def print_normal(teksti):
     for char in teksti:
         sys.stdout.write(char)
         sys.stdout.flush()
         time.sleep(0.03)
 
-def fast(teksti):
+def print_nopea(teksti):
     for char in teksti:
         sys.stdout.write(char)
         sys.stdout.flush()
         time.sleep(0.01)
 
-def slow(teksti):
+def print_hidas(teksti):
     for char in teksti:
         sys.stdout.write(char)
         sys.stdout.flush()

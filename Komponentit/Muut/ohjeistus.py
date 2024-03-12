@@ -20,4 +20,4 @@ SPACE: Avaa valikon, jossa on viisi lähintä lentokenttää. Kentät on numeroi
 sinne.
 H: ohjeet ja opasteet
 """
-    kirjotin.fast(ohje)
+    kirjotin.print_nopea(ohje)
