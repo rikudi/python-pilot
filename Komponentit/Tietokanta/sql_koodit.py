@@ -104,8 +104,9 @@ def mysql_hae_koordinaatit(nimi):
     sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{nimi}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
-    koordinaatit = kursori.fetchone()
-    return koordinaatit
+    x = kursori.fetchone()
+    lat, lon = x
+    return lat, lon
 
 def mysql_hae_polttoaine(nimi):
     sql = f"SELECT fuel FROM game WHERE id = '{nimi}'"
@@ -124,4 +125,4 @@ def etaisyys_ankara(pelaaja_id):
 
     nykyinen_sijainti = (tulos[0][0], tulos[0][1])
     ankara = (40.128101348899996, 32.995098114)
-    print("Etäisyys määränpäästä:", round(great_circle(nykyinen_sijainti,ankara).kilometers),"km")
+    print("\nEtäisyys määränpäästä:", round(great_circle(nykyinen_sijainti,ankara).kilometers),"km")

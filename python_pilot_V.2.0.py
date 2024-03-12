@@ -8,6 +8,16 @@ from Komponentit.Muut.ohjeistus import ohjeistus
 from Työkalut.kirjotin import fast, normal, slow
 from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
+import mysql.connector
+
+yhteys = mysql.connector.connect(
+    host="localhost",
+    port=3306,
+    database='python_pilot',  # vaiha
+    user='root',
+    password='admin',         # vaiha
+    autocommit=True
+)
 
 ### GLOBAL-MUUTTUJAT ###
 
@@ -77,13 +87,14 @@ def ilma_tilatarkistus(pelaaja_id):
         print(Fore.RED, "Lentokoneesi ammuttiin alas.", Style.RESET_ALL)
         game_over = True
 
-    koordinaatit = sql_koodit.mysql_hae_koordinaatit(pelaaja_id)
+    lat, lon = sql_koodit.mysql_hae_koordinaatit(pelaaja_id)
     geolocator = Nominatim(user_agent="testi")
-    location = geolocator.reverse(koordinaatit, language="fi")
+    location = geolocator.reverse((lat, lon), language="fi")
+    #print("Olet maan", location.raw['address']['country'], "ilmatilassa.\n")
 
     if not game_over:
         if location is None:
-            print("Olet kansainvälisessä ilmatilassa.")
+            fast("Olet kansainvälisessä ilmatilassa.")
             return
 
         elif location.raw['address']['country'] == "Venäjä":
@@ -95,28 +106,29 @@ def ilma_tilatarkistus(pelaaja_id):
             return
 
         elif location.raw['address']['country'] == "Ukraina":
-            print(Fore.RED,
-                  "Olet Ukrainan ilmatilassa, poistu enintään kahden kierroksen aikana tai lentokoneesi ammutaan alas",
+            print(Fore.RED, "Olet Ukrainan ilmatilassa, poistu enintään kahden kierroksen aikana tai lentokoneesi ammutaan alas",
                   Style.RESET_ALL)
             ukraina_counter += 1
             print(Fore.RED, "COUNTER", ukraina_counter, Style.RESET_ALL)
             return
 
         elif location.raw['address']['country'] == "Saksa":
-            print("Olet maan Saksa ilmatilassa")
+            fast("\nOlet maan Saksa ilmatilassa")
             saksa_counter += 1
             if saksa_counter == 1:
-                print("Sinulla tulee pakottava tarve saada rinkeliä, laskeudut lähimmälle lentokentälle syömään.")
-                print("Laskeudutaan...")
+                normal("\nSinulla tulee pakottava tarve saada rinkeliä, laskeudut lähimmälle lentokentälle syömään.")
                 time.sleep(2)
-                print("Masu on täynnä, kone nousee takaisin ilmaan.")
+                normal("\nLaskeudutaan...")
+                time.sleep(2)
+                normal("\nMasu on täynnä, kone nousee takaisin ilmaan.\n")
                 time.sleep(2)
                 sql_koodit.mysql_update_kierrokset(pelaaja_id)
                 return
             return
-    else:
-        print("Olet maan", location.raw['address']['country'], "ilmatilassa.\n")
-        return
+        else:
+            print("Olet maan", location.raw['address']['country'], "ilmatilassa.\n")
+            return
+
 
 ### POLTTOAINEEN PÄIVITYS JA KÄSITTELY
 def polttoaine_mittaus(pelaaja_id):
