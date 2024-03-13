@@ -19,7 +19,6 @@ Num 7: Luode
 Num 8: Pohjoinen
 Num 9: Koillinen
 SPACE: Avaa valikon, jossa on viisi lähintä lentokenttää. Kentät on numeroitu 1–5. Painamalla halutun lentokentän numeroa, kone laskeutuu
-sinne.
-H: ohjeet ja opasteet\n
+sinne.\n
 """
     kirjotin.print_nopea(ohje)

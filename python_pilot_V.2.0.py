@@ -221,6 +221,7 @@ while True:
     else:
         print(f"Tervetuloa pelaamaan: '{pelaaja_id}'!")
         sql_koodit.mysql_insert_alkuarvot(pelaaja_id)
+        time.sleep(2.5)
         os.system('cls')
         break
 
