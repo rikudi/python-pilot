@@ -29,4 +29,4 @@ Pelin tavoitteena on saapua Ankaran lentokentälle mahdollisimman vähin siirroi
 2. Käynnistä peli
    
     ```bash
-    python python_pilot.py
+    python python_pilot_V2.0.py
