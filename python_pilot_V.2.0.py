@@ -171,18 +171,24 @@ def kierros():
            if valinta == "LTAC":
                print_normal("Olet laskeutunut Ankaraan. Peli päättyy.\n")
                game_over = True
-               palaute.palaute(pelaaja_id)
+               sql_koodit.palaute(pelaaja_id)
                sql_koodit.mysql_game_over(pelaaja_id)
-               kysymys2 = input("\nHaluatko pelata uudestaan?[kyllä/ei]: ")
-               if kysymys2 == "ei":
-                   print("Näkemiin!")
-                   time.sleep(2)
-                   quit()
-               else:
-                   print("Aloitetaan alusta...")
-                   time.sleep(5)
-                   game_over = False
-                   game_loop()
+               kysymys2 = input("\nHaluatko pelata uudestaan?[kyllä/ei]: ").lower()
+               while True:
+                   if kysymys2 == "ei":
+                       print("Näkemiin!")
+                       time.sleep(2)
+                       quit()
+                   elif kysymys2 == "kyllä":
+                       print("Aloitetaan alusta...")
+                       time.sleep(5)
+                       game_over = False
+                       game_loop()
+                   else:
+                       print("Tarkista syöte.")
+                       kysymys2 = input("\nHaluatko pelata uudestaan?[kyllä/ei]: ").lower()
+
+
            print_normal(f"Valittu kenttä johon laskeudutaan (ICAO): {valinta}")
            sql_koodit.mysql_update_laskeutuminen(pelaaja_id, valinta)
            time.sleep(1)
