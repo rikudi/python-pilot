@@ -215,6 +215,7 @@ def kierros():
 ohjeistus()
 
 while True:
+    "Voit antaa uuden pelaajatunnuksen aloittaaksesi uuden peli tai voit antaa olemassaolevan pelaajatunnuksen jatkaaksesi siitä mihin jäit!"
     pelaaja_id = input("Anna pelaajatunnus: ")
     while pelaaja_id == "" or pelaaja_id == " ":
         print("Tyhjää nimeä ei voi olla, syötä uusi tai olemassaoleva nimi")
