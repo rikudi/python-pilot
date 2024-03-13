@@ -1,15 +1,14 @@
 import os, time
-
 from geopy.distance import geodesic
 from Komponentit.Valikot import valikko
 from Komponentit.Tietokanta import palaute, sql_koodit
 from Komponentit.Muut.ohjeistus import ohjeistus
-from Työkalut.kirjotin import print_nopea, print_normal, print_hidas
+from Komponentit.Muut.kirjotin import print_nopea, print_normal, print_hidas
 from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
 
 
-### GLOBAL-MUUTTUJAT ###
+# GLOBAL-MUUTTUJAT
 
 init() #colorama init
 start_lat = None
@@ -22,7 +21,7 @@ venaja_counter = 0
 ukraina_counter = 0
 saksa_counter = 0
 
-### NÄPPÄIMET
+# NÄPPÄIMET
 suunnat = {
             "1": 225,       # Lounas
             "2": 180,       # Etelä
@@ -43,7 +42,7 @@ suunnat = {
             " ": None       # Valikko
         }
 
-### GAME_LOOP - Pelin ydinfunktio jota kutsutaan niin kauan kunnes game_over = TRUE ###
+# GAME_LOOP - Pelin ydinfunktio jota kutsutaan niin kauan kunnes game_over = TRUE
 def game_loop():
     # Tietokannasta saadut arvot asetetaan global muuttujiin ja niitä päivitetään pelin aikana
     global game_over, venaja_counter, ukraina_counter, saksa_counter, start_lat, start_lon
@@ -70,7 +69,7 @@ def game_loop():
                 game_over = False
                 game_loop()
 
-### ILMATILAN TARKISTUS JA TAPAHTUMIEN KÄSITTELY ###
+# ILMATILAN TARKISTUS JA TAPAHTUMIEN KÄSITTELY
 def ilma_tilatarkistus(pelaaja_id):
     global game_over, venaja_counter, ukraina_counter, saksa_counter
     if venaja_counter >= 4 or ukraina_counter >= 2:
@@ -119,7 +118,7 @@ def ilma_tilatarkistus(pelaaja_id):
             return
 
 
-### POLTTOAINEEN PÄIVITYS JA KÄSITTELY
+# POLTTOAINEEN PÄIVITYS JA KÄSITTELY
 def polttoaine_mittaus(pelaaja_id):
     global game_over
     fuel = sql_koodit.mysql_hae_polttoaine(pelaaja_id)
@@ -132,7 +131,7 @@ def polttoaine_mittaus(pelaaja_id):
             print(Fore.RED, "Lentokoneesi putoaa.", Style.RESET_ALL)
             game_over = True
 
-### PELAAJAN LIIKE JA SIJAINNIN PÄIVITYS ###
+# PELAAJAN LIIKE JA SIJAINNIN PÄIVITYS ###
 def liikuta_pelaajaa(suunta):
     global start_lat, start_lon
     if not game_over:
@@ -142,7 +141,7 @@ def liikuta_pelaajaa(suunta):
         start_lat, start_lon = uusi_sijainti.latitude, uusi_sijainti.longitude
         sql_koodit.mysql_update_coordinates(pelaaja_id, start_lat, start_lon)
 
-### KIERROS
+# KIERROS
 def kierros():
     global pelaaja_id, kierros_count, lahimmat_lentokentat, game_over
     tiedot = sql_koodit.mysql_query_tiedot(pelaaja_id)                          # sql tiedot -kysely
@@ -199,7 +198,7 @@ def kierros():
         sql_koodit.etaisyys_ankara(pelaaja_id)
         polttoaine_mittaus(pelaaja_id)
 
-### ALOITUS ###
+# ALOITUS
 ohjeistus()
 
 while True:

@@ -1,4 +1,6 @@
-from Työkalut import kirjotin
+from Komponentit.Muut import kirjotin
+
+
 def ohjeistus():
     ohje = """
 Tervetuloa pelaamaan Python Pilottia!
@@ -18,6 +20,6 @@ Num 8: Pohjoinen
 Num 9: Koillinen
 SPACE: Avaa valikon, jossa on viisi lähintä lentokenttää. Kentät on numeroitu 1–5. Painamalla halutun lentokentän numeroa, kone laskeutuu
 sinne.
-H: ohjeet ja opasteet
+H: ohjeet ja opasteet\n
 """
     kirjotin.print_nopea(ohje)
