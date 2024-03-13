@@ -10,7 +10,8 @@ from colorama import init, Fore, Style
 
 # GLOBAL-MUUTTUJAT
 
-init() #colorama init
+init() #colorama init6
+
 start_lat = None
 start_lon = None
 kierros_count = 1
@@ -59,15 +60,20 @@ def game_loop():
             ukraina_counter = 0
             saksa_counter = 0
             print_normal("Peli päättyi! Lentokoneesi tuhoutui.")
-            kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ")
-            if kysymys == "ei":
-                print_normal("Näkemiin!")
-                quit()
-            else:
-                print_hidas("Aloitetaan alusta...")
-                time.sleep(1)
-                game_over = False
-                game_loop()
+            kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ").lower()
+            while True:
+                if kysymys == "ei":
+                    print_normal("Näkemiin!")
+                    quit()
+                elif kysymys == "kyllä":
+                    print_hidas("Aloitetaan alusta...")
+                    time.sleep(1)
+                    game_over = False
+                    game_loop()
+                else:
+                    print("Tarkista syöte.")
+                    kysymys = input("Haluatko pelata uudestaan?[kyllä/ei]: ").lower()
+
 
 # ILMATILAN TARKISTUS JA TAPAHTUMIEN KÄSITTELY
 def ilma_tilatarkistus(pelaaja_id):
