@@ -1,14 +1,13 @@
 # Tällä koodilla yhdistetään tietokantaan. Voisi luoda erillisen käyttäjän #
 # tietokantaan peliä varten #
 import mysql.connector
-from geopy.geocoders import Nominatim
-from geopy.distance import geodesic
+from geopy.distance import great_circle
 yhteys = mysql.connector.connect(
     host="localhost",
     port=3306,
-    database='flight_game',  # vaiha
+    database='python_pilot',  # vaiha
     user='root',
-    password='jokusalasana',         # vaiha
+    password='admin',         # vaiha
     autocommit=True
 )
 
@@ -18,21 +17,19 @@ def mysql_update_polttoaine(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-#mysql_update_polttoaine(nimi)
 
-# funktio pelaajan nimen lisäämiseen tietokantaan ja pelaajalle syötetään alkuarvot tietokantaan"
-
+# Funktio pelaajan nimen lisäämiseen tietokantaan ja pelaajalle syötetään alkuarvot tietokantaan"
 def mysql_game_over(pelaaja_tunnus):
     sql = f"UPDATE game SET fuel = 100, location_lat = 60.3172, location_lon = 24.963301, kierrokset = 0 WHERE id = '{pelaaja_tunnus}'"
     kursori = yhteys.cursor()
     kursori.execute(sql)
 
+# Funktio joka tallentaa uuden pelaajan alkutilastot tietokantaan
 def mysql_insert_alkuarvot(nimi):
     sql = f"INSERT INTO game (id, fuel, location_lat, location_lon, kierrokset) VALUES ('{nimi}', 100, 60.3172, 24.963301, 0)"
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-#mysql_insert_alkuarvot(nimi)
 
 # Funktio koordinaattien päivittämiseen tietokantaan #
 def mysql_update_coordinates(nimi, latitude, longitude):
@@ -40,7 +37,6 @@ def mysql_update_coordinates(nimi, latitude, longitude):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-#mysql_update_coordinates(nimi, latitude, longitude)
 
 # Funktio lähimpien lentokenttien löytämiseen tietokannasta #
 def mysql_query_close_airports(nimi):
@@ -49,8 +45,6 @@ def mysql_query_close_airports(nimi):
     kursori.execute(sql)
     mytiedot = kursori.fetchall()
     return mytiedot
-'''for x in mysql_query_close_airports():
-    print(x)'''
 
 # Funktio kierrosten lisäämiseen tietokantaan #
 def mysql_update_kierrokset(nimi):
@@ -58,7 +52,6 @@ def mysql_update_kierrokset(nimi):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-#mysql_update_kierrokset(nimi)
 
 # Funktio lentokentälle laskeutumiseen ja bensan täyttämiseen#
 def mysql_update_laskeutuminen(nimi, ICAO):
@@ -66,7 +59,6 @@ def mysql_update_laskeutuminen(nimi, ICAO):
     kursori = yhteys.cursor()
     kursori.execute(sql)
     return
-#mysql_update_laskeutuminen(nimi, ICAO)
 
 # Funktio pelaajan tietojen printtaamiseen. Latitude, longitude, maa, polttoaine, etäisyys Ankaraan, #
 # mahollinen lentokenttä, mahollinen tapahtuma #
@@ -77,7 +69,8 @@ def mysql_query_tiedot(nimi):
     mytiedot = kursori.fetchall()
     return mytiedot
 
-def mysql_hae_maali(nimi, koordinaatit):
+# voi poistaa
+'''def mysql_hae_maali(nimi, koordinaatit):
     geolocator = Nominatim(user_agent=f"{nimi}")
     location = geolocator.reverse(koordinaatit, language="fi")
     if location == None:
@@ -93,11 +86,9 @@ def mysql_hae_maali(nimi, koordinaatit):
     Ankara = (40.128101348899996, 32.995098114)
 
     matka = geodesic(koordinaatit, Ankara).km
-    print(matka, "Kilometriä ankaraan\n")
+    print(matka, "Kilometriä ankaraan\n")'''
 
 # Funktio nimen tarkistamiseen tietokannasta #
-
-#thelist = []
 def mysql_id_tarkistus(nimi):
     sql = f"SELECT id FROM game WHERE id = '{nimi}'"
     kursori = yhteys.cursor()
@@ -108,3 +99,30 @@ def mysql_id_tarkistus(nimi):
     # jos funktion parametrina saadun nimen perusteella lista on tyhjä => kyseessä uusi pelaaja
     lista = [str(rivi[0]) for rivi in tiedot]
     return lista
+
+def mysql_hae_koordinaatit(nimi):
+    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    x = kursori.fetchone()
+    lat, lon = x
+    return lat, lon
+
+def mysql_hae_polttoaine(nimi):
+    sql = f"SELECT fuel FROM game WHERE id = '{nimi}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    x = kursori.fetchone()
+    x = (x[0])
+    return x
+
+# Funktio joka laskee etäisyyden Ankaran lentokentän ja pelaajan välillä
+def etaisyys_ankara(pelaaja_id):
+    sql = f"SELECT location_lat, location_lon FROM game WHERE id = '{pelaaja_id}'"
+    kursori = yhteys.cursor()
+    kursori.execute(sql)
+    tulos = kursori.fetchall()
+
+    nykyinen_sijainti = (tulos[0][0], tulos[0][1])
+    ankara = (40.128101348899996, 32.995098114)
+    print("\nEtäisyys määränpäästä:", round(great_circle(nykyinen_sijainti,ankara).kilometers),"km")
