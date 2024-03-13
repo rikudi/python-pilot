@@ -79,7 +79,7 @@ def game_loop():
 # ILMATILAN TARKISTUS JA TAPAHTUMIEN KÄSITTELY
 def ilma_tilatarkistus(pelaaja_id):
     global game_over, venaja_counter, ukraina_counter, saksa_counter
-    if venaja_counter >= 4 or ukraina_counter >= 2:
+    if venaja_counter >= 3 or ukraina_counter >= 2:
         print(Fore.RED, "Lentokoneesi ammuttiin alas.", Style.RESET_ALL)
         game_over = True
 
