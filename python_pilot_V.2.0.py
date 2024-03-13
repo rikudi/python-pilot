@@ -1,7 +1,7 @@
 import os, time
 from geopy.distance import geodesic
 from Komponentit.Valikot import valikko
-from Komponentit.Tietokanta import palaute, sql_koodit
+from Komponentit.Tietokanta import sql_koodit
 from Komponentit.Muut.ohjeistus import ohjeistus
 from Komponentit.Muut.kirjotin import print_nopea, print_normal, print_hidas
 from geopy.geocoders import Nominatim
