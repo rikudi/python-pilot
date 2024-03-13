@@ -8,6 +8,7 @@ from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
 
 
+
 # GLOBAL-MUUTTUJAT
 
 init() #colorama init6
@@ -186,6 +187,8 @@ def kierros():
                    else:
                        print("Tarkista syöte.")
                        kysymys2 = input("\nHaluatko pelata uudestaan?[kyllä/ei]: ").lower()
+
+
            print_normal(f"Valittu kenttä johon laskeudutaan (ICAO): {valinta}")
            sql_koodit.mysql_update_laskeutuminen(pelaaja_id, valinta)
            time.sleep(1)
@@ -212,7 +215,6 @@ def kierros():
 ohjeistus()
 
 while True:
-    print("Voit antaa uuden pelaajatunnuksen aloittaaksesi uuden pelin tai voit antaa olemassaolevan pelaajatunnuksen jatkaaksesi siitä mihin jäit!")
     pelaaja_id = input("Anna pelaajatunnus: ")
     while pelaaja_id == "" or pelaaja_id == " ":
         print("Tyhjää nimeä ei voi olla, syötä uusi tai olemassaoleva nimi")
