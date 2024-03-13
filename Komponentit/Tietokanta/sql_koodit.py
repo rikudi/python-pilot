@@ -69,25 +69,6 @@ def mysql_query_tiedot(nimi):
     mytiedot = kursori.fetchall()
     return mytiedot
 
-# voi poistaa
-'''def mysql_hae_maali(nimi, koordinaatit):
-    geolocator = Nominatim(user_agent=f"{nimi}")
-    location = geolocator.reverse(koordinaatit, language="fi")
-    if location == None:
-        print("Olet kansainvälisessä ilmatilassa")
-    else:
-        print("Olet maan", location.raw['address']['country'] + " ilmatilassa")
-
-    print("Koordinaatit ja bensa:")
-    for x in mysql_query_tiedot(nimi):
-        print(x)
-
-    # koordinaatit etsitty tietokannasta ja laitettu suoraan tohon #
-    Ankara = (40.128101348899996, 32.995098114)
-
-    matka = geodesic(koordinaatit, Ankara).km
-    print(matka, "Kilometriä ankaraan\n")'''
-
 # Funktio nimen tarkistamiseen tietokannasta #
 def mysql_id_tarkistus(nimi):
     sql = f"SELECT id FROM game WHERE id = '{nimi}'"

@@ -8,6 +8,7 @@ from geopy.geocoders import Nominatim
 from colorama import init, Fore, Style
 
 
+
 # GLOBAL-MUUTTUJAT
 
 init() #colorama init6
