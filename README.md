@@ -21,10 +21,19 @@ Pelin tavoitteena on saapua Ankaran lentokentälle mahdollisimman vähin siirroi
 
 ## Aloitus
 
+Projektikäyttää SQL-tietokantaa ja myös tietokanta itsessään on sisällytetty projektin hakemistoon "Tietokanta". Pelin kehityksessä ja testauksessa on käytetty MariaDB-järjestelmää.
+
+HUOM!
+projektin_tietokanta.sql -tiedostosta puuttuu sarake "high_score" taulusta "game". Sen voi lisätä sql -tiedoston ajamisen jälkeen "game" tauluun seuraavalla komennolla:
+
+   ```bash
+   ALTER TABLE game ADD COLUMN high_score INT DEFAULT 0;
+   ```
+
 1. Asenna tarvittavat kirjastot:
 
    ```bash
-   pip install console_menu colorama
+   pip install console_menu colorama geopy
 
 2. Käynnistä peli
    
